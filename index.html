@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vortex Capital Holdings - Access Portal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: #080a0f; color: #e2e8f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow-x: hidden; position: relative; }
+        
+        /* Premium Cyber Background Layer */
+        body::before {
+            content: ''; position: absolute; width: 300px; height: 300px; background: radial-gradient(circle, rgba(21,101,255,0.15) 0%, transparent 70%); top: -50px; left: -50px; z-index: 0;
+        }
+        body::after {
+            content: ''; position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(218,165,32,0.08) 0%, transparent 70%); bottom: -100px; right: -100px; z-index: 0;
+        }
+
+        .container { width: 100%; max-width: 410px; padding: 24px 20px; z-index: 1; }
+        .auth-card { background: rgba(13, 17, 24, 0.85); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 30px 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); backdrop-filter: blur(10px); animation: fadeIn 0.6s ease-out; }
+        
+        .logo-area { text-align: center; margin-bottom: 28px; }
+        .logo-title { font-size: 22px; font-weight: 800; letter-spacing: 2px; background: linear-gradient(135deg, #fff 30%, #1565ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-sub { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 4px; margin-top: 4px; }
+
+        .segment-title { font-size: 16px; font-weight: 600; margin-bottom: 18px; color: #f1f5f9; border-left: 3px solid #1565ff; padding-left: 8px; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; font-weight: 500; }
+        .input-wrapper { display: flex; align-items: center; background: #020617; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0 12px; height: 45px; transition: 0.3s; }
+        .input-wrapper:focus-within { border-color: #1565ff; box-shadow: 0 0 0 2px rgba(21,101,255,0.2); }
+        .prefix { font-size: 14px; color: #64748b; margin-right: 10px; font-weight: 600; }
+        .form-input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 14px; height: 100%; }
+
+        /* Captcha Framework */
+        .captcha-row { display: flex; gap: 12px; align-items: center; }
+        .captcha-box { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 8px; height: 45px; width: 110px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; letter-spacing: 3px; color: #daa520; font-style: italic; user-select: none; border: 1px dashed rgba(255,255,255,0.2); }
+
+        .action-btn { width: 100%; height: 46px; border: none; border-radius: 8px; background: linear-gradient(135deg, #1565ff, #0a4fd9); color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 14px; box-shadow: 0 4px 12px rgba(21,101,255,0.3); transition: 0.2s; }
+        .action-btn:active { transform: scale(0.98); }
+        .alt-btn { width: 100%; height: 45px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; background: transparent; color: #cbd5e1; font-weight: 500; font-size: 13px; cursor: pointer; margin-top: 10px; }
+
+        .footer-links { display: flex; justify-content: space-between; margin-top: 14px; font-size: 12px; }
+        .footer-links a { color: #1565ff; text-decoration: none; }
+
+        .help-trigger { text-align: center; margin-top: 25px; font-size: 13px; color: #64748b; cursor: pointer; text-decoration: underline; }
+        
+        /* Floating Support Panel */
+        .help-panel { display: none; background: #0d1118; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 20px; margin-top: 15px; font-size: 12px; line-height: 1.6; color: #94a3b8; }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="auth-card">
+            <div class="logo-area">
+                <div class="logo-title">VORTEX CAPITAL</div>
+                <div class="logo-sub">Institutional Quant Farming</div>
+            </div>
+
+            <div id="sectionLogin" class="view-section active">
+                <div class="segment-title">Account Authentication</div>
+                <div class="form-group">
+                    <label>Terminal Mobile Identifier</label>
+                    <div class="input-wrapper">
+                        <span class="prefix">+91</span>
+                        <input type="text" id="logPhone" class="form-input" placeholder="Enter phone" maxlength="10">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Account Secure Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="logPass" class="form-input" placeholder="Enter password">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Security Verification Code</label>
+                    <div class="captcha-row">
+                        <div class="input-wrapper" style="flex:1;">
+                            <input type="text" id="logCap" class="form-input" placeholder="Enter code" maxlength="4">
+                        </div>
+                        <div class="captcha-box" id="logCapImg" onclick="genCaptcha('logCapImg')">6739</div>
+                    </div>
+                </div>
+                <button class="action-btn" onclick="processLogin()">Initialize Secure Login</button>
+                <button class="alt-btn" onclick="toggleView('sectionReg')">Create Corporate Account</button>
+                <div class="footer-links">
+                    <span></span>
+                    <a href="#" onclick="toggleView('sectionForgot')">Forgot Account Credentials?</a>
+                </div>
+            </div>
+
+            <div id="sectionReg" class="view-section">
+                <div class="segment-title">Registration Engine</div>
+                <div class="form-group">
+                    <label>Corporate Mobile Identifier</label>
+                    <div class="input-wrapper"><span class="prefix">+91</span><input type="text" id="regPhone" class="form-input" placeholder="10 Digit Number" maxlength="10"></div>
+                </div>
+                <div class="form-group">
+                    <label>Set Secure Password</label>
+                    <div class="input-wrapper"><input type="password" id="regPass" class="form-input" placeholder="Min 6 characters"></div>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Captcha Code</label>
+                    <div class="captcha-row">
+                        <div class="input-wrapper" style="flex:1;"><input type="text" id="regCap" class="form-input" placeholder="Verify code"></div>
+                        <div class="captcha-box" id="regCapImg" onclick="genCaptcha('regCapImg')">1192</div>
+                    </div>
+                </div>
+                <button class="action-btn" onclick="processRegister()">Deploy Node Registration</button>
+                <button class="alt-btn" onclick="toggleView('sectionLogin')">Back to Terminal Sign In</button>
+            </div>
+
+            <div id="sectionForgot" class="view-section">
+                <div class="segment-title">Credential Overhaul</div>
+                <div class="form-group">
+                    <label>Registered Phone Target</label>
+                    <div class="input-wrapper"><span class="prefix">+91</span><input type="text" id="forPhone" class="form-input" placeholder="Enter 10 Digits" maxlength="10"></div>
+                </div>
+                <div class="form-group">
+                    <label>Assign Brand New Password</label>
+                    <div class="input-wrapper"><input type="password" id="forPass" class="form-input" placeholder="Enter New Password"></div>
+                </div>
+                <div class="form-group">
+                    <label>Security Verification Code</label>
+                    <div class="captcha-row">
+                        <div class="input-wrapper" style="flex:1;"><input type="text" id="forCap" class="form-input" placeholder="Verify security"></div>
+                        <div class="captcha-box" id="forCapImg" onclick="genCaptcha('forCapImg')">8843</div>
+                    </div>
+                </div>
+                <button class="action-btn" onclick="processReset()">Authorize Password Overwrite</button>
+                <button class="alt-btn" onclick="toggleView('sectionLogin')">Return to Authentication</button>
+            </div>
+
+            <div class="help-trigger" onclick="$('#helpBox').toggle()">⚖️ Institutional Corporate Disclosure & Support</div>
+            
+            <div class="help-panel" id="helpBox">
+                <strong>Vortex Capital Systems Ltd.</strong><br>
+                <b>Registry Node ID:</b> VTX-784311-UK<br>
+                <b>Corporate Office:</b> 24 Broad Street, Financial District, London, EC2N 1HQ<br>
+                <b>Email Liaison:</b> support@vortex-holding.co.uk<br>
+                <br>
+                <i>All terminal authentications are encrypted under quantum safe security architectures. Unauthorized tracking attempts are reported directly to global nodes.</i>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCAUQfcd1k63pp2DDyBHWZoD5M-dkid45M",
+            authDomain: "scarlet-private-limited.firebaseapp.com",
+            databaseURL: "https://scarlet-private-limited-default-rtdb.firebaseio.com/",
+            projectId: "scarlet-private-limited",
+            storageBucket: "scarlet-private-limited.firebasestorage.app",
+            messagingSenderId: "570744434725",
+            appId: "1:570744434725:web:14b0452a7810806a1ccfcc"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let currentCaptcha = "";
+        function genCaptcha(targetId) {
+            let code = Math.floor(1000 + Math.random() * 9000);
+            currentCaptcha = code.toString();
+            $('#' + targetId).text(currentCaptcha);
+        }
+
+        function toggleView(viewId) {
+            $('.view-section').removeClass('active');
+            $('#' + viewId).addClass('active');
+            genCaptcha(viewId === 'sectionLogin' ? 'logCapImg' : viewId === 'sectionReg' ? 'regCapImg' : 'forCapImg');
+        }
+
+        $(document).ready(function() { genCaptcha('logCapImg'); });
+
+        function processLogin() {
+            let phone = $('#logPhone').val().trim();
+            let pass = $('#logPass').val();
+            let cap = $('#logCap').val().trim();
+
+            if(!phone || !pass || !cap) { alert("All terminal fields mandatory!"); return; }
+            if(cap !== currentCaptcha) { alert("Security Captcha code incorrect!"); genCaptcha('logCapImg'); return; }
+
+            database.ref('vortex_users/' + phone).once('value').then((snap) => {
+                if(snap.exists()) {
+                    let user = snap.val();
+                    if(user.password === pass) {
+                        alert("Secure Access Handshake Completed!");
+                        window.location.href = "home.html?user=" + phone;
+                    } else { alert("Cryptographic Key Match Failed!"); genCaptcha('logCapImg'); }
+                } else { alert("Identifier unrecognized in global nodes!"); genCaptcha('logCapImg'); }
+            });
+        }
+
+        function processRegister() {
+            let phone = $('#regPhone').val().trim();
+            let pass = $('#regPass').val();
+            let cap = $('#regCap').val().trim();
+
+            if(phone.length !== 10 || pass.length < 6) { alert("Valid 10 digit ID and min 6 length password required."); return; }
+            if(cap !== currentCaptcha) { alert("Captcha verification failed."); genCaptcha('regCapImg'); return; }
+
+            database.ref('vortex_users/' + phone).once('value').then((snap) => {
+                if(snap.exists()) { alert("Node already active in infrastructure!"); }
+                else {
+                    database.ref('vortex_users/' + phone).set({
+                        phone: phone, password: pass, balance: 0, promotion_income: 0, invest_income: 0
+                    }).then(() => {
+                        alert("Quantum Registration Successful. Proceed to login.");
+                        toggleView('sectionLogin');
+                    });
+                }
+            });
+        }
+
+        function processReset() {
+            let phone = $('#forPhone').val().trim();
+            let pass = $('#forPass').val();
+            if(phone.length !== 10 || !pass) { alert("Verify fields!"); return; }
+            if($('#forCap').val().trim() !== currentCaptcha) { alert("Invalid Code"); return; }
+
+            database.ref('vortex_users/' + phone).once('value').then((snap) => {
+                if(!snap.exists()) { alert("No configuration found!"); }
+                else {
+                    database.ref('vortex_users/' + phone).update({ password: pass }).then(() => {
+                        alert("System override complete! Password overwritten.");
+                        toggleView('sectionLogin');
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
