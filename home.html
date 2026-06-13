@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vortex Dashboard Terminal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #030712; color: #f3f4f6; padding-bottom: 75px; -webkit-user-select: none; }
+        
+        /* POPUP MODAL */
+        .popup-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 20000; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .popup-modal.show { opacity: 1; pointer-events: auto; }
+        .popup-box { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); width: 88%; max-width: 360px; border-radius: 16px; padding: 24px; text-align: center; }
+        .popup-box h3 { color: #1565ff; font-size: 18px; margin-bottom: 12px; }
+        .popup-box p { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 20px; }
+        .popup-close { background: linear-gradient(135deg, #1565ff, #00d2ff); border: none; color: white; padding: 10px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+
+        /* TOP TERMINAL HEADER */
+        .top-navbar { background: linear-gradient(180deg, #0b0f19 0%, #030712 100%); padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .sys-identity h4 { color: #ffffff; letter-spacing: 1px; font-size: 16px; }
+        .sys-identity p { color: #64748b; font-size: 11px; margin-top: 2px; }
+        .help-center-btn { background: rgba(21,101,255,0.15); border: 1px solid #1565ff; color: #1565ff; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; }
+
+        /* METRICS LAYER */
+        .vault-card { background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; margin: 16px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        .vault-core-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .vault-master-bal { font-size: 28px; font-weight: 800; color: #ffffff; margin: 4px 0 16px; }
+        .vault-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 14px; }
+        .sub-metric-val { font-size: 15px; font-weight: 700; color: #daa520; margin-top: 2px; }
+        .sub-metric-lbl { font-size: 11px; color: #64748b; }
+
+        /* SECTIONS CORE CONTAINER */
+        .section-wrapper { display: none; padding: 0 16px; animation: tabFade 0.3s ease-out; }
+        .section-wrapper.active { display: block; }
+        .core-header-title { font-size: 18px; font-weight: 700; margin: 16px 0; letter-spacing: 0.5px; border-left: 4px solid #1565ff; padding-left: 10px; }
+
+        /* INTERACTION LAYOUT COMPONENT */
+        .block-card { background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 16px; margin-bottom: 12px; }
+        .action-submit-btn { width: 100%; background: linear-gradient(135deg, #1565ff, #0a4fd9); border: none; height: 44px; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 8px; font-size: 14px; }
+
+        /* LUCKY WHEEL COMPONENTS */
+        .spinner-frame { display: flex; flex-direction: column; align-items: center; margin: 20px 0; }
+        .wheel-container { width: 220px; height: 220px; border: 6px solid #daa520; border-radius: 50%; position: relative; overflow: hidden; background: #020617; transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1); box-shadow: 0 0 20px rgba(218,165,32,0.3); }
+        .wheel-center-pointer { position: absolute; width: 50px; height: 50px; background: #fff; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 12px; color: #020617; border: 4px solid #1565ff; cursor: pointer; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .wheel-sector { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; top: 0; left: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; font-size: 11px; font-weight: bold; color: #fff; }
+
+        /* PRODUCT CARD STRUCTURE */
+        .dual-tab-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .tab-sub-trigger { background: #0f172a; border: 1px solid rgba(255,255,255,0.05); color: #94a3b8; height: 38px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: bold; }
+        .tab-sub-trigger.active { background: #1565ff; color: white; border-color: #1565ff; }
+        .product-strip { display: flex; justify-content: space-between; align-items: center; background: #0f172a; border: 1px solid rgba(255,255,255,0.04); padding: 14px; border-radius: 12px; margin-bottom: 10px; }
+        .buy-strip-btn { background: #1565ff; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        
+        /* BOTTOM NAVIGATION DOCK */
+        .bottom-nav-dock { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: #0b0f19; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-around; align-items: center; z-index: 10000; }
+        .dock-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #64748b; font-weight: 600; cursor: pointer; flex: 1; height: 100%; gap: 4px; }
+        .dock-item.active { color: #1565ff; background: rgba(255,255,255,0.01); }
+        .dock-item span { font-size: 18px; }
+
+        /* TOAST STRUCTURE */
+        #custom_toast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: rgba(21,101,255,0.95); color: #fff; padding: 10px 22px; border-radius: 30px; font-size: 12px; font-weight: bold; z-index: 30000; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        
+        /* INTERIOR FULL SCREEN COMPONENT MODAL LAYERS */
+        .interior-modal-canvas { position: fixed; inset: 0; background: #030712; z-index: 15000; display: none; padding: 16px; overflow-y: auto; }
+        @keyframes tabFade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="popup-modal" id="sysNoticeModal">
+        <div class="popup-box">
+            <h3>Vortex Corporate Network</h3>
+            <p>Welcome to Vortex Capital Labs. Our computational high frequency farming cluster nodes are optimized for real-time asset appreciation. Claim daily gifts, activate high performance computational models, and utilize institutional grade secure withdrawal rails seamlessly.</p>
+            <button class="popup-close" onclick="$('#sysNoticeModal').removeClass('show')">Acknowledge Connection</button>
+        </div>
+    </div>
+
+    <div class="top-navbar">
+        <div class="sys-identity">
+            <h4 id="displayUserUID">VTX Node: Loading...</h4>
+            <p>Institutional Quant Framework Secure Shell</p>
+        </div>
+        <button class="help-center-btn" onclick="openUtilityScreen('sub-help')">Support Center</button>
+    </div>
+
+    <div class="vault-card">
+        <div class="vault-core-title">Net Liquidity Value (Core Balance)</div>
+        <div class="vault-master-bal" id="uiMainBal">₹0.00</div>
+        <div class="vault-sub-grid">
+            <div>
+                <div class="sub-metric-lbl">Promotion Income</div>
+                <div class="sub-metric-val" id="uiPromoBal">₹0.00</div>
+            </div>
+            <div>
+                <div class="sub-metric-lbl">Investment Yield</div>
+                <div class="sub-metric-val" id="uiInvestBal">₹0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-home" class="section-wrapper active">
+        <div class="core-header-title">Enterprise Dashboard</div>
+        <div class="block-card" style="background: linear-gradient(135deg, #1e1b4b, #0f172a);">
+            <h4 style="color: #00d2ff; font-size:14px; margin-bottom:4px;">⚡ Real-Time High Frequency Processing Node Active</h4>
+            <p style="font-size:12px; color: #94a3b8; line-height:1.5;">Vortex servers execute micro-arbitrage algorithms spanning global liquid tokens guaranteeing constant risk mitigation strategies.</p>
+        </div>
+        
+        <div class="block-card">
+            <h4 style="font-size:13px; margin-bottom:8px; color:#daa520;">🎫 Claim Alpha Activation Gift Code</h4>
+            <p style="font-size:12px; color:#64748b; margin-bottom:12px;">Enter valid 6-character cryptographic activation payload hash below to redeem direct allocation bonus.</p>
+            <input type="text" id="giftCodeInput" placeholder="Enter 6-Digit Gift Code" style="width:100%; background:#020617; border:1px solid rgba(255,255,255,0.1); height:40px; border-radius:6px; color:white; padding:0 12px; font-weight:bold; letter-spacing:1px; outline:none; margin-bottom:8px;">
+            <button class="action-submit-btn" onclick="claimVortexGift()">Redeem Payload Asset</button>
+        </div>
+    </div>
+
+    <div id="view-income" class="section-wrapper">
+        <div class="core-header-title">Quantum Clusters</div>
+        <div class="dual-tab-panel">
+            <button class="tab-sub-trigger active" id="btnSubProd" onclick="switchIncomeSubTab('products')">Investment Products</button>
+            <button class="tab-sub-trigger" id="btnSubDev" onclick="switchIncomeSubTab('devices')">Active Node Clusters (<span id="devCount">0</span>)</button>
+        </div>
+
+        <div id="income-products-container">
+            </div>
+
+        <div id="income-devices-container" style="display:none;">
+            <div class="block-card" style="text-align:center; padding:20px;">
+                <p style="font-size:13px; color:#64748b; margin-bottom:10px;">Tap below to collect synchronous yields from all registered arrays simultaneously.</p>
+                <button class="action-submit-btn" onclick="collectDeviceYields()" style="background:linear-gradient(135deg, #22c55e, #15803d); max-width:200px; margin:0 auto;">Collect Daily Node Yield</button>
+            </div>
+            <div id="deviceListInject"></div>
+        </div>
+    </div>
+
+    <div id="view-checkin" class="section-wrapper">
+        <div class="core-header-title">Algorithmic Rotation Node</div>
+        <div class="block-card">
+            <h4 style="font-size:14px; margin-bottom:4px; color:#1565ff;">Quantum Wheel Allocator Architecture</h4>
+            <p style="font-size:12px; color:#94a3b8; line-height:1.5;">Every 24 hours, users gain single cryptographic cycle rotation clearance. Guaranteed allocation payout directly integrated with your central liquid framework balances.</p>
+        </div>
+
+        <div class="spinner-frame">
+            <div class="wheel-container" id="spinWheelElement">
+                <div class="wheel-center-pointer" onclick="engageWheelRotation()">GO</div>
+                <div class="wheel-sector" style="transform: rotate(0deg); background:#1e293b;">₹10</div>
+                <div class="wheel-sector" style="transform: rotate(60deg); background:#0f172a;">₹20</div>
+                <div class="wheel-sector" style="transform: rotate(120deg); background:#1e293b;">₹100</div>
+                <div class="wheel-sector" style="transform: rotate(180deg); background:#0f172a;">₹300</div>
+                <div class="wheel-sector" style="transform: rotate(240deg); background:#1e293b;">₹500</div>
+                <div class="wheel-sector" style="transform: rotate(300deg); background:#0f172a;">₹1500</div>
+            </div>
+            <p style="font-size:11px; color:#64748b; margin-top:15px;">* Rotation limits reboot automatically at 00:00 server standard time.</p>
+        </div>
+    </div>
+
+    <div id="view-share" class="section-wrapper">
+        <div class="core-header-title">Affiliate Commission Shell</div>
+        <div class="block-card" style="text-align:center;">
+            <div style="background:white; width:140px; height:140px; margin:10px auto; display:flex; align-items:center; justify-content:center; border-radius:12px; padding:10px;">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://vortex-capital.labs" alt="QR Code" style="width:100%;">
+            </div>
+            <h4 style="font-size:14px; margin:12px 0 6px;">Your Dedicated Cluster Link</h4>
+            <input type="text" id="uiRefLink" readonly style="width:100%; text-align:center; background:#020617; border:1px solid rgba(255,255,255,0.08); padding:10px; color:#1565ff; font-weight:bold; font-size:12px; border-radius:6px; outline:none; margin-bottom:12px;">
+            <button class="action-submit-btn" onclick="copyReferralLink()">Copy Propagation Coordinates</button>
+        </div>
+        <div class="block-card">
+            <h4 style="font-size:13px; color:#daa520; margin-bottom:6px;">Multi-Tier Computational Rewards Map</h4>
+            <p style="font-size:12px; color:#94a3b8; line-height:1.6;">Level 1 Direct Referrals grant 12% instant capital pool distribution. Level 2 operations render 5% node compensation, while Level 3 cluster setups route 2% automatic pipeline commission directly into your terminal environment.</p>
+        </div>
+    </div>
+
+    <div id="view-mine" class="section-wrapper">
+        <div class="core-header-title">Personal Command Center</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:16px;">
+            <button onclick="openUtilityScreen('sub-recharge')" style="background:linear-gradient(135deg, #16a34a, #15803d); border:none; height:48px; border-radius:10px; color:white; font-weight:bold; font-size:14px; cursor:pointer;">📥 INJECT FUNDS</button>
+            <button onclick="openUtilityScreen('sub-withdraw')" style="background:linear-gradient(135deg, #dc2626, #b91c1c); border:none; height:48px; border-radius:10px; color:white; font-weight:bold; font-size:14px; cursor:pointer;">🏦 WITHDRAW ASSETS</button>
+        </div>
+
+        <div class="block-card" style="padding: 2px 0;">
+            <div style="padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; cursor:pointer;" onclick="openUtilityScreen('sub-bank')">🔐 Bind Secure Banking Coordinates</div>
+            <div style="padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; cursor:pointer;" onclick="openUtilityScreen('sub-bill')">📈 Ledger Statement Logs</div>
+            <div style="padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; cursor:pointer;" onclick="openUtilityScreen('sub-rec-recharge')">🧾 Fund Injection Invoices</div>
+            <div style="padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; cursor:pointer;" onclick="openUtilityScreen('sub-rec-withdraw')">🏧 Assets Settlement History</div>
+            <div style="padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; cursor:pointer;" onclick="openUtilityScreen('sub-team')">👥 Structural Affiliates Tree</div>
+            <div style="padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; cursor:pointer;" onclick="openUtilityScreen('sub-about')">🏛️ Institutional Corporate Dossier</div>
+            <div style="padding:14px 16px; font-size:13px; cursor:pointer; color:#ef4444; font-weight:bold;" onclick="window.location.href='index.html'">🛑 Terminate Connection Panel</div>
+        </div>
+    </div>
+
+    <div id="subScreenContainer" class="interior-modal-canvas">
+        <button onclick="closeUtilityScreen()" style="background:none; border:none; color:#1565ff; font-weight:bold; font-size:14px; cursor:pointer; margin-bottom:20px;">← Close Shell View</button>
+        <div id="subScreenContentInject"></div>
+    </div>
+
+    <div class="bottom-nav-dock">
+        <button class="dock-item active" id="dock-home" onclick="switchMasterTab('view-home')"><span>🏠</span>Home</button>
+        <button class="dock-item" id="dock-income" onclick="switchMasterTab('view-income')"><span>📊</span>Income</button>
+        <button class="dock-item" id="dock-checkin" onclick="switchMasterTab('view-checkin')"><span>🎡</span>Spinner</button>
+        <button class="dock-item" id="dock-share" onclick="switchMasterTab('view-share')"><span>🔗</span>Share</button>
+        <button class="dock-item" id="dock-mine" onclick="switchMasterTab('view-mine')"><span>👤</span>Mine</button>
+    </div>
+
+    <div id="custom_toast"></div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCAUQfcd1k63pp2DDyBHWZoD5M-dkid45M",
+            authDomain: "scarlet-private-limited.firebaseapp.com",
+            databaseURL: "https://scarlet-private-limited-default-rtdb.firebaseio.com/",
+            projectId: "scarlet-private-limited",
+            storageBucket: "scarlet-private-limited.firebasestorage.app",
+            messagingSenderId: "570744434725",
+            appId: "1:570744434725:web:14b0452a7810806a1ccfcc"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const userPhone = urlParams.get('user');
+
+        if(!userPhone) { alert("Access Denied! Return to security."); window.location.href="index.html"; }
+
+        let currentBalance = 0, promoIncome = 0, investIncome = 0;
+        let isWheelSpinning = false;
+
+        // 10 Institutional Products Static Blueprint
+        const productCatalog = [
+            { id: 0, name: "Vortex Alpha Sandbox", cost: 0, profit: 50, cycle: 3, label: "Quantum Prototype Framework" },
+            { id: 1, name: "Stratus Grid Core v1", cost: 400, profit: 45, cycle: 45, label: "Micro Pipeline Node" },
+            { id: 2, name: "Stratus Grid Core v2", cost: 900, profit: 110, cycle: 45, label: "Optimized Processing Array" },
+            { id: 3, name: "Stratus Grid Core v3", cost: 2200, profit: 280, cycle: 50, label: "Distributed Hashing Module" },
+            { id: 4, name: "Nimbus Synergy Suite", cost: 5000, profit: 680, cycle: 50, label: "Deep Inference Core Cluster" },
+            { id: 5, name: "Nimbus Synergy Max", cost: 12000, profit: 1750, cycle: 55, label: "Predictive Quant Array v4" },
+            { id: 6, name: "Titan Overlord Node", cost: 25000, profit: 3900, cycle: 60, label: "Neural Topology Array" },
+            { id: 7, name: "Titan Overlord Ultra", cost: 50000, profit: 8200, cycle: 60, label: "Datacenter Monolithic Blade" },
+            { id: 8, name: "Apex Citadel Mainframe", cost: 90000, profit: 16000, cycle: 65, label: "Sovereign Deep Quant Cluster" },
+            { id: 9, name: "Apex Horizon Quantum Infinite", cost: 150000, profit: 29500, cycle: 70, label: "Custom Supercomputing Vector Node" }
+        ];
+
+        $(document).ready(function() {
+            if(userPhone) {
+                $('#displayUserUID').text("VTX Node ID: " + userPhone);
+                $('#uiRefLink').val("https://vortex-capital.labs/?ref=" + userPhone);
+                syncLiveTerminalData();
+                renderCatalogCards();
+                setTimeout(() => { $('#sysNoticeModal').addClass('show'); }, 600);
+            }
+        });
+
+        function showToast(msg) { $('#custom_toast').text(msg).fadeIn(200).delay(2500).fadeOut(200); }
+
+        function syncLiveTerminalData() {
+     
