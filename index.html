@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Capital Pro</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body {
+            background: #f4f7fc;
+            background-image: linear-gradient(135deg, rgba(21, 101, 255, 0.05) 25%, transparent 25%, transparent 50%, rgba(21, 101, 255, 0.05) 50%, rgba(21, 101, 255, 0.05) 75%, transparent 75%, transparent);
+            background-size: 40px 40px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 400px;
+            padding: 32px 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .logo-box { margin-bottom: 24px; }
+        .logo-text { font-size: 14px; font-weight: 800; color: #1565ff; letter-spacing: 1px; margin-top: 4px; text-transform: uppercase; }
+        .welcome-title { font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 20px; text-align: left; }
+        .form-group { margin-bottom: 16px; text-align: left; }
+        .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; font-weight: 500; }
+        .input-wrapper { display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 12px; height: 48px; }
+        .input-wrapper:focus-within { border-color: #1565ff; background: #fff; }
+        .prefix { font-size: 14px; color: #334155; margin-right: 10px; font-weight: 600; }
+        .form-input { flex: 1; background: transparent; border: none; outline: none; color: #334155; font-size: 14px; height: 100%; }
+        .options-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 13px; }
+        .remember-me { display: flex; align-items: center; gap: 6px; color: #475569; }
+        .forgot-link { color: #1565ff; text-decoration: none; font-weight: 500; }
+        .btn-primary { width: 100%; height: 48px; background: #1565ff; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(21,101,255,0.2); }
+        .btn-secondary { width: 100%; height: 48px; background: transparent; color: #1565ff; border: 1px solid #1565ff; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo-box">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block; margin: 0 auto;">
+                <path d="M12 2C12 2 6 9 6 14C6 17.3137 8.68629 20 12 20C15.3137 20 18 17.3137 18 14C18 9 12 2 12 2Z" fill="#1565ff"/>
+                <path d="M12 6C12 6 9 11 9 14C9 15.6569 10.3431 17 12 17C13.6569 17 15 15.6569 15 14C15 11 12 6 12 6Z" fill="#a5f3fc"/>
+            </svg>
+            <div class="logo-text">Jeevanneer</div>
+        </div>
+
+        <div id="loginView" class="view-section active">
+            <div class="welcome-title">Welcome back !</div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <div class="input-wrapper">
+                    <span class="prefix">+91</span>
+                    <input type="text" id="logPhone" class="form-input" placeholder="Enter phone number" maxlength="10">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="logPass" class="form-input" placeholder="Enter password">
+                </div>
+            </div>
+            <div class="options-row">
+                <label class="remember-me">
+                    <input type="checkbox" checked style="accent-color: #1565ff;"> Remember Password
+                </label>
+                <a href="#" class="forgot-link" onclick="alert('Please contact technical support node to reset credentials.')">Forgot Password?</a>
+            </div>
+            <button class="btn-primary" onclick="executeLogin()">Sign In</button>
+            <button class="btn-secondary" onclick="switchView('regView')">No account? Register</button>
+        </div>
+
+        <div id="regView" class="view-section">
+            <div class="welcome-title">Create Account</div>
+            <div class="form-group">
+                <label>Mobile Number</label>
+                <div class="input-wrapper">
+                    <span class="prefix">+91</span>
+                    <input type="text" id="regPhone" class="form-input" placeholder="Enter 10 digit number" maxlength="10">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Set Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="regPass" class="form-input" placeholder="Minimum 6 characters">
+                </div>
+            </div>
+            <button class="btn-primary" style="margin-top: 10px;" onclick="executeRegister()">Register Node</button>
+            <button class="btn-secondary" onclick="switchView('loginView')">Back to Sign In</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCAUQfcd1k63pp2DDyBHWZoD5M-dkid45M",
+            authDomain: "scarlet-private-limited.firebaseapp.com",
+            databaseURL: "https://scarlet-private-limited-default-rtdb.firebaseio.com/",
+            projectId: "scarlet-private-limited",
+            storageBucket: "scarlet-private-limited.firebasestorage.app",
+            messagingSenderId: "570744434725",
+            appId: "1:570744434725:web:14b0452a7810806a1ccfcc"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function switchView(id) {
+            $('.view-section').removeClass('active');
+            $('#' + id).addClass('active');
+        }
+
+        function executeLogin() {
+            let phone = $('#logPhone').val().trim();
+            let pass = $('#logPass').val();
+
+            if(!phone || !pass) { alert("Credentials field cannot be blank!"); return; }
+
+            database.ref('users/' + phone).once('value').then((snap) => {
+                if(snap.exists()) {
+                    let user = snap.val();
+                    if(user.password === pass) {
+                        alert("Access Granted! Syncing Core Terminal...");
+                        window.location.href = "home.html?user=" + phone;
+                    } else { alert("Key authentication failed! Invalid Password."); }
+                } else { alert("Terminal identifier not found! Register first."); }
+            }).catch(e => { alert("Sync Error: " + e.message); });
+        }
+
+        function executeRegister() {
+            let phone = $('#regPhone').val().trim();
+            let pass = $('#regPass').val();
+
+            if(phone.length !== 10 || pass.length < 6) { alert("Provide 10 digit number and min 6 length password."); return; }
+
+            database.ref('users/' + phone).once('value').then((snap) => {
+                if(snap.exists()) { alert("Identifier node already active in architecture!"); }
+                else {
+                    database.ref('users/' + phone).set({
+                        phone: phone, password: pass, balance: 0, recharge: 0, withdraw: 0, promotion_income: 0, invest_income: 0
+                    }).then(() => {
+                        alert("Quantum Registration Completed! Proceeding to Sign In.");
+                        switchView('loginView');
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+  </html>
