@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capital Pro - Core Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: #f4f7fc; color: #1e293b; padding-bottom: 80px; -webkit-user-select: none; }
+        
+        /* Top Navigation Header */
+        .header { background: #fff; padding: 16px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); margin: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .user-id { font-weight: bold; color: #1565ff; font-size: 15px; }
+        .help-center-btn { background: #f0f5ff; border: none; color: #1565ff; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; }
+
+        /* Master Balance Dashboard Panel */
+        .bal-card { background: linear-gradient(135deg, #1565ff, #0052d4); color: white; padding: 20px; border-radius: 16px; box-shadow: 0 8px 20px rgba(21,101,255,0.15); margin: 0 15px 16px; }
+        .bal-lbl { font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .bal-amount { font-size: 30px; font-weight: 800; margin: 4px 0 14px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 12px; }
+        .stat-val { font-weight: bold; font-size: 15px; margin-top: 2px; }
+
+        /* Content Wrappers */
+        .section-wrapper { display: none; padding: 0 15px; animation: tabFade 0.3s ease-out; }
+        .section-wrapper.active { display: block; }
+        .core-header-title { font-size: 18px; font-weight: 700; margin: 16px 0 12px; border-left: 4px solid #1565ff; padding-left: 10px; }
+        .block-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); padding: 16px; margin-bottom: 12px; border: 1px solid #eef2f6; }
+
+        /* Action Controls & Input Fields */
+        .action-submit-btn { width: 100%; background: linear-gradient(135deg, #1565ff, #0a4fd9); border: none; height: 44px; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 8px; font-size: 14px; }
+        .input-box-field { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; height: 44px; border-radius: 8px; color: #334155; padding: 0 12px; font-weight: bold; outline: none; margin-bottom: 8px; }
+
+        /* Spinner Component */
+        .spinner-frame { display: flex; flex-direction: column; align-items: center; margin: 20px 0; }
+        .wheel-container { width: 220px; height: 220px; border: 6px solid #1565ff; border-radius: 50%; position: relative; overflow: hidden; background: #fff; transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .wheel-center-pointer { position: absolute; width: 46px; height: 46px; background: #fff; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 12px; color: #1565ff; border: 4px solid #0052d4; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.2); }
+        .wheel-sector { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; top: 0; left: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 24px; font-size: 11px; font-weight: bold; color: #334155; }
+
+        /* Dual Panel Sub Tabs */
+        .dual-tab-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .tab-sub-trigger { background: #fff; border: 1px solid #e2e8f0; color: #64748b; height: 38px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: bold; }
+        .tab-sub-trigger.active { background: #1565ff; color: white; border-color: #1565ff; }
+
+        /* Catalog Product Strip */
+        .product-strip { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #eef2f6; padding: 14px; border-radius: 12px; margin-bottom: 10px; }
+        .buy-strip-btn { background: #1565ff; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+
+        /* Bottom Application Menu Dock */
+        .bottom-nav-dock { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; z-index: 10000; }
+        .dock-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #64748b; font-weight: 600; cursor: pointer; flex: 1; height: 100%; gap: 4px; }
+        .dock-item.active { color: #1565ff; }
+        .dock-item span { font-size: 18px; }
+
+        /* Toast & Modal Layers */
+        #custom_toast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: rgba(30,41,59,0.95); color: #fff; padding: 10px 22px; border-radius: 30px; font-size: 12px; font-weight: bold; z-index: 30000; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .interior-modal-canvas { position: fixed; inset: 0; background: #f4f7fc; z-index: 15000; display: none; padding: 16px; overflow-y: auto; }
+        @keyframes tabFade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div>
+            <div class="user-id" id="displayUserUID">ID: Loading...</div>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Secure Operations Shell Connected</div>
+        </div>
+        <button class="help-center-btn" onclick="openUtilityScreen('sub-help')">Help Desk</button>
+    </div>
+
+    <div class="bal-card">
+        <div class="bal-lbl">Available Core Liquidity</div>
+        <div class="bal-amount" id="uiMainBal">₹0.00</div>
+        <div class="stats-grid">
+            <div>
+                <div class="bal-lbl">Total Recharge</div>
+                <div class="stat-val" id="uiRechargeBal">₹0.00</div>
+            </div>
+            <div>
+                <div class="bal-lbl">Total Withdraw</div>
+                <div class="stat-val" id="uiWithdrawBal">₹0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-home" class="section-wrapper active">
+        <div class="core-header-title">Enterprise Portal</div>
+        <div class="block-card" style="background: linear-gradient(135deg, #e0f2fe, #f0fdf4);">
+            <h4 style="color: #0369a1; font-size:14px; margin-bottom:4px;">⚡ Real-Time Liquidity Arbitrage Architecture</h4>
+            <p style="font-size:12px; color: #64748b; line-height:1.5;">Jeevanneer nodes process structural yield routing mechanisms to ensure complete baseline capital pool appreciation cycles seamlessly.</p>
+        </div>
+        
+        <div class="block-card">
+            <h4 style="font-size:13px; margin-bottom:8px; color:#0f172a;">🎫 Redeem Payload Promo Code</h4>
+            <input type="text" id="giftCodeInput" placeholder="Enter 6-Digit Promo Hash" class="input-box-field">
+            <button class="action-submit-btn" onclick="claimVortexGift()">Deconstruct & Inject Token Value</button>
+        </div>
+    </div>
+
+    <div id="view-income" class="section-wrapper">
+        <div class="core-header-title">Quantum Clusters</div>
+        <div class="dual-tab-panel">
+            <button class="tab-sub-trigger active" id="btnSubProd" onclick="switchIncomeSubTab('products')">Investment Catalogs</button>
+            <button class="tab-sub-trigger" id="btnSubDev" onclick="switchIncomeSubTab('devices')">Active Arrays (<span id="devCount">0</span>)</button>
+        </div>
+        <div id="income-products-container"></div>
+        <div id="income-devices-container" style="display:none;">
+            <div class="block-card" style="text-align:center; padding:18px;">
+                <p style="font-size:13px; color:#64748b; margin-bottom:10px;">Synchronize all live modules to harvest accumulated system yields into core vault.</p>
+                <button class="action-submit-btn" onclick="collectDeviceYields()" style="background:linear-gradient(135deg, #22c55e, #16a34a); max-width:220px; margin:0 auto;">Harvest Operational Pools</button>
+            </div>
+            <div id="deviceListInject"></div>
+        </div>
+    </div>
+
+    <div id="view-checkin" class="section-wrapper">
+        <div class="core-header-title">Algorithmic Rotation Array</div>
+        <div class="block-card">
+            <h4 style="font-size:14px; margin-bottom:4px; color:#1565ff;">Cyclical Payout Allotment Matrix</h4>
+            <p style="font-size:12px; color:#64748b; line-height:1.5;">Single cryptographic rotation clearance verified per 24 hours. Payout vectors route explicitly into available central liquid balances.</p>
+        </div>
+        <div class="spinner-frame">
+            <div class="wheel-container" id="spinWheelElement">
+                <div class="wheel-center-pointer" onclick="engageWheelRotation()">GO</div>
+                <div class="wheel-sector" style="transform: rotate(0deg); background:#f1f5f9;">\u20b910</div>
+                <div class="wheel-sector" style="transform: rotate(60deg); background:#fff;">\u20b920</div>
+                <div class="wheel-sector" style="transform: rotate(120deg); background:#f1f5f9;">\u20b9100</div>
+                <div class="wheel-sector" style="transform: rotate(180deg); background:#fff;">\u20b9300</div>
+                <div class="wheel-sector" style="transform: rotate(240deg); background:#f1f5f9;">\u20b9500</div>
+                <div class="wheel-sector" style="transform: rotate(300deg); background:#fff;">\u20b91500</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-share" class="section-wrapper">
+        <div class="core-header-title">Affiliate Commission Pipeline</div>
+        <div class="block-card" style="text-align:center;">
+            <div style="background:white; border: 1px solid #e2e8f0; width:130px; height:130px; margin:10px auto; display:flex; align-items:center; justify-content:center; border-radius:12px; padding:8px;">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=https://jeevanneer-capital.pro" alt="QR Link Mapping" style="width:100%;" />
+            </div>
+            <h4 style="font-size:14px; margin:10px 0 6px;">Your Network Propagation Node URL</h4>
+            <input type="text" id="uiRefLink" readonly style="width:100%; text-align:center; background:#f8fafc; border:1px solid #e2e8f0; padding:10px; color:#1565ff; font-weight:bold; font-size:12px; border-radius:6px; outline:none; margin-bottom:12px;" />
+            <button class="action-submit-btn" onclick="copyReferralLink()">Clone Access Target Coordinates</button>
+        </div>
+    </div>
+
+    <div id="view-mine" class="section-wrapper">
+        <div class="core-header-title">Command Dashboard Config</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:16px;">
+            <button onclick="openUtilityScreen('sub-recharge')" style="background:linear-gradient(135deg, #16a34a, #15803d); border:none; height:46px; border-radius:8px; color:white; font-weight:bold; font-size:13px; cursor:pointer;">📥 INJECT FUNDS</button>
+            <button onclick="openUtilityScreen('sub-withdraw')" style="background:linear-gradient(135deg, #dc2626, #b91c1c); border:none; height:46px; border-radius:8px; color:white; font-weight:bold; font-size:13px; cursor:pointer;">🏦 WITHDRAW ASSETS</button>
+        </div>
+        <div class="block-card" style="padding: 2px 0;">
+            <div class="menu-item" style="padding:14px 16px; border-bottom:1px solid #f1f5f9; font-size:13px; cursor:pointer;" onclick="openUtilityScreen('sub-bank')">🔐 Bind Secure Banking Coordinates</div>
+            <div class="menu-item" style="padding:14px 16px; border-bottom:1px solid #f1f5f9; font-size:13px; cursor:pointer;" onclick="openUtilityScreen('sub-bill')">📈 Ledger Statement Logs</div>
+            <div class="menu-item" style="padding:14px 16px; border-bottom:1px solid #f1f5f9; font-size:13px; cursor:pointer;" onclick="openUtilityScreen('sub-rec-recharge')">🧾 Fund Injection Invoices</div>
+            <div class="menu-item" style="padding:14px 16px; border-bottom:1px solid #f1f5f9; font-size:13px; cursor:pointer;" onclick="openUtilityScreen('sub-rec-withdraw')">🏧 Assets Settlement History</div>
+            <div class="menu-item" style="padding:14px 16px; border-bottom:1px solid #f1f5f9; font-size:13px; cursor:pointer;" onclick="openUtilityScreen('sub-about')">🏛️ Corporate Structure Dossier</div>
+            <div class="menu-item" style="padding:14px 16px; font-size:13px; cursor:pointer; color:#ef4444; font-weight:bold;" onclick="window.location.href='index.html'">🛑 Terminate Dashboard Pipeline</div>
+        </div>
+    </div>
+
+    <div id="subScreenContainer" class="interior-modal-canvas">
+        <button onclick="closeUtilityScreen()" style="background:none; border:none; color:#1565ff; font-weight:bold; font-size:14px; cursor:pointer; margin-bottom:20px;">← Close Shell Canvas</button>
+        <div id="subScreenContentInject"></div>
+    </div>
+
+    <div class="bottom-nav-dock">
+        <button class="dock-item active" id="dock-home" onclick="switchMasterTab('view-home')"><span>🏠</span>Home</button>
+        <button class="dock-item" id="dock-income" onclick="switchMasterTab('view-income')"><span>📊</span>Income</button>
+        <button class="dock-item" id="dock-checkin" onclick="switchMasterTab('view-checkin')"><span>🎡</span>Spinner</button>
+        <button class="dock-item" id="dock-share" onclick="switchMasterTab('view-share')"><span>🔗</span>Share</button>
+        <button class="dock-item" id="dock-mine" onclick="switchMasterTab('view-mine')"><span>👤</span>Mine</button>
+    </div>
+
+    <div id="custom_toast"></div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCAUQfcd1k63pp2DDyBHWZoD5M-dkid45M",
+            authDomain: "scarlet-private-limited.firebaseapp.com",
+            databaseURL: "https://scarlet-private-limited-default-rtdb.firebaseio.com/",
+            projectId: "scarlet-private-limited",
+            storageBucket: "scarlet-private-limited.firebasestorage.app",
+            messagingSenderId: "570744434725",
+            appId: "1:570744434725:web:14b0452a7810806a1ccfcc"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const userPhone = urlParams.get('user');
+
+        if(!userPhone) { alert("Access Denied! Return to terminal authentication portal."); window.location.href="index.html"; }
+
+        let currentBalance = 0, totalRecharge = 0, totalWithdraw = 0;
+        let isWheelSpinning = false;
+
+        const productCatalog = [
+            { id: 0, name: "Jeevanneer Sandbox Prototype", cost: 0, profit: 40, cycle: 3, label: "Framework Core" },
+            { id: 1, name: "Hydro Array Cluster Core v1", cost: 500, profit: 55, cycle: 40, label: "Micro Pipeline Node" },
+            { id: 2, name: "Hydro Array Cluster Core v2", cost: 1200, profit: 140, cycle: 40, label: "Optimized Processing Node" },
+            { id: 3, name: "Hydro Array Cluster Core v3", cost: 3000, profit: 360, cycle: 45, label: "Monolithic Data Node" }
+        ];
+
+        $(document).ready(function() {
+            if(userPhone) {
+                $('#displayUserUID').text("ID: +91 " + userPhone);
+                $('#uiRefLink').val("https://jeevanneer-capital.pro/?ref=" + userPhone);
+                syncLiveTerminalData();
+                renderCatalogCards();
+            }
+        });
+
+        function showToast(msg) { $('#custom_toast').text(msg).fadeIn(200).delay(2200).fadeOut(200); }
+
+        function syncLiveTerminalData() {
+            database.ref('users/' + userPhone).on('value', (snap) => {
+                if(snap.exists()) {
+                    let d = snap.val();
+                    currentBalance = Number(d.balance || 0);
+                    totalRecharge = Number(d.recharge || 0);
+                    totalWithdraw = Number(d.withdraw || 0);
+
+                    $('#uiMainBal').text("₹" + currentBalance.toFixed(2));
+                    $('#uiRechargeBal').text("₹" + totalRecharge.toFixed(2));
+                    $('#uiWithdrawBal').text("₹" + totalWithdraw.toFixed(2));
+
+                    let devices = d.active_devices ? Object.keys(d.active_devices).length : 0;
+                    $('#devCount').text(devices);
+                }
+            });
+        }
+
+        function switchMasterTab(tabId) {
+            $('.section-wrapper').removeClass('active');
+            $('.dock-item').removeClass('active');
+            $('#' + tabId).addClass('active');
+            $('#' + tabId.replace('view-', 'dock-')).addClass('active');
+        }
+
+        function switchIncomeSubTab(type) {
+            $('.tab-sub-trigger').removeClass('active');
+            if(type === 'products') {
+                $('#btnSubProd').addClass('active'); $('#income-products-container').show(); $('#income-devices-container').hide();
+            } else {
+                $('#btnSubDev').addClass('active'); $('#income-products-container').hide(); $('#income-devices-container').show();
+                fetchUserActiveDevices();
+            }
+        }
+
+        function renderCatalogCards() {
+            let h = "";
+            productCatalog.forEach(p => {
+                h += `<div class="product-strip">
+                    <div>
+                        <b style="font-size:14px; color:#1e293b;">${p.name}</b><br>
+                        <span style="font-size:10px; color:#1565ff; font-weight:bold; text-transform:uppercase;">${p.label}</span><br>
+                        <span style="font-size:12px; color:#64748b;">Cost: ₹${p.cost} | Profit: ₹${p.profit}/Day | Cycle: ${p.cycle} Days</span>
+                    </div>
+                    <button class="buy-strip-btn" onclick="buyQuantProduct(${p.id})">${p.cost===0?'Deploy Free':'Initialize'}</button>
+                </div>`;
+            });
+            $('#income-products-container').html(h);
+        }
+
+        function buyQuantProduct(pid) {
+            let p = productCatalog[pid];
+            if(currentBalance < p.cost) { showToast("Insufficient Pipeline Liquidity Balance!"); return; }
+            if(confirm(`Confirm activating ${p.name} framework for ₹${p.cost}?`)) {
+                database.ref('users/' + userPhone).update({
+                    balance: currentBalance - p.cost
+                }).then(() => {
+                    database.ref('users/' + userPhone + '/active_devices').push({
+                        productId: p.id, name: p.name, dailyProfit: p.profit, lastClaimDate: ""
+                    });
+                    database.ref('users/' + userPhone + '/ledgers').push({
+                        type: `Activated Module [${p.name}]`, change: `-₹${p.cost}`, timestamp: new Date().toLocaleString()
+                    });
+                    showToast(`${p.name} Node Cluster Initialized Into Shell Framework Successfully.`);
+                });
+            }
+        }
+
+        function fetchUserActiveDevices() {
+            database.ref('users/' + userPhone + '/active_devices').once('value').then((snap) => {
+                let h = "";
+                if(!snap.exists()) { h = "<p style='text-align:center;font-size:12px;color:#94a3b8;padding:20px 0;
