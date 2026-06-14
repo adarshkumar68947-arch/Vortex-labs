@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniCore Capital - Integrated Framework</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-base: #06070a;
+            --bg-surface: #0f111a;
+            --bg-card: #141724;
+            --primary: #1565ff;
+            --primary-glow: rgba(21, 101, 255, 0.4);
+            --accent-neon: #00ffcc;
+            --accent-green: #00ff66;
+            --accent-gold: #ffcc00;
+            --danger: #ff3366;
+            --text-main: #f1f5f9;
+            --text-muted: #64748b;
+            --border-glow: #1e2538;
+        }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            padding-bottom: 240px !important; 
+        }
+        
+        /* AUTHENTICATION OVERLAY */
+        #authWrapperPortal {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-base);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin-bottom: 200px;
+        }
+        #authWrapperPortal::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(21, 101, 255, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(21, 101, 255, 0.04) 1px, transparent 1px);
+            background-size: 30px 30px;
+            pointer-events: none;
+        }
+        .auth-container {
+            background: var(--bg-surface);
+            width: 100%;
+            max-width: 400px;
+            padding: 30px 22px;
+            border-radius: 16px;
+            border: 1px solid var(--border-glow);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(21, 101, 255, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        .header-brand { text-align: center; margin-bottom: 24px; }
+        .brand-icon {
+            width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary), var(--accent-neon));
+            margin: 0 auto 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        }
+        .brand-name { font-size: 20px; font-weight: 800; letter-spacing: 1.5px; color: #fff; }
+        .brand-sub { font-size: 10px; color: var(--accent-neon); font-weight: 600; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .form-panel { display: none; }
+        .form-panel.active { display: block; }
+        .panel-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; border-left: 3px solid var(--accent-neon); padding-left: 10px; }
+        .input-group { margin-bottom: 14px; }
+        .input-label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
+        
+        .box-wrapper { display: flex; align-items: center; background: #151824; border: 1px solid var(--border-glow); border-radius: 8px; padding: 0 12px; height: 44px; }
+        .box-wrapper:focus-within { border-color: var(--accent-neon); }
+        .input-field { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 14px; height: 100%; }
+        .prefix-node { color: #fff; font-weight: 700; font-size: 14px; margin-right: 10px; border-right: 1px solid var(--border-glow); padding-right: 10px; }
+        
+        .options-flex { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; margin: 12px 0; }
+        .link-node { color: var(--primary); text-decoration: none; }
+
+        .btn-core { width: 100%; height: 44px; background: linear-gradient(135deg, var(--primary), #004ecc); border: none; color: #fff; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px var(--primary-glow); margin-bottom: 10px; }
+        .btn-outline { width: 100%; height: 44px; background: transparent; border: 1px solid var(--border-glow); color: var(--text-main); border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+        /* MAIN DASHBOARD STRUCTURE */
+        #mainAppDashboardFrame { display: none; padding-bottom: 80px; }
+        
+        .top-header { background: var(--bg-surface); padding: 16px; border-bottom: 1px solid var(--border-glow); display: flex; justify-content: space-between; align-items: center; }
+        .uid-string { font-size: 14px; font-weight: 700; color: var(--accent-neon); }
+        .system-help-trigger { background: rgba(21,101,255,0.15); border: 1px solid var(--primary); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; }
+
+        .metrics-card { background: linear-gradient(135deg, var(--bg-surface), #161a29); margin: 15px; padding: 18px; border-radius: 14px; border: 1px solid var(--border-glow); }
+        .m-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .m-val { font-size: 26px; font-weight: 800; color: #fff; margin: 4px 0 14px; }
+        .metrics-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid #1e2336; padding-top: 12px; }
+        .sub-val { font-weight: 700; font-size: 14px; margin-top: 2px; color: #fff; }
+
+        /* SECTIONS TIMELINE */
+        .app-section { display: none; padding: 0 15px; }
+        .app-section.active { display: block; }
+        .sec-header-title { font-size: 15px; font-weight: 800; margin: 16px 0 12px; text-transform: uppercase; color: var(--text-main); border-left: 3px solid var(--primary); padding-left: 8px; }
+
+        .block-card { background: var(--bg-surface); padding: 15px; border-radius: 12px; border: 1px solid var(--border-glow); margin-bottom: 12px; }
+        .interactive-input { width: 100%; padding: 12px; background: #151824; border: 1px solid var(--border-glow); border-radius: 8px; color: #fff; outline: none; font-weight: bold; font-size: 14px; margin-bottom: 10px; }
+        .action-btn-core { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--primary), #004ecc); border: none; color: white; font-weight: 700; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-size: 12.5px; }
+
+        /* SYSTEM DIALOG POPUPS */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 25000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
+        .modal-box { background: var(--bg-surface); width: 90%; max-width: 350px; border-radius: 16px; padding: 22px; text-align: center; border: 1px solid var(--primary); box-shadow: 0 0 25px rgba(21,101,255,0.3); }
+        .modal-title { font-size: 18px; font-weight: 800; color: var(--accent-neon); margin-bottom: 10px; text-transform: uppercase; }
+        .modal-text { font-size: 13px; color: var(--text-main); margin-bottom: 18px; line-height: 1.5; text-align: left; background: #131622; padding: 12px; border-radius: 8px; border: 1px solid #1f2436; }
+        .modal-btn { background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+
+        /* PRODUCT ROWS */
+        .product-strip { background: var(--bg-surface); border: 1px solid var(--border-glow); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .product-strip.free-node { border-left: 4px solid var(--accent-neon); background: linear-gradient(90deg, #101924, #0f111a); }
+        .buy-node-action { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+        /* SPINNER CANVAS WHEEL */
+        .spinner-frame-box { display: flex; flex-direction: column; align-items: center; margin: 20px 0; }
+        .rotator-canvas { width: 230px; height: 230px; border: 6px double var(--primary); border-radius: 50%; position: relative; overflow: hidden; background: #111422; transition: transform 4s cubic-bezier(0.1, 0.8, 0.2, 1); }
+        .rotator-pointer { position: absolute; width: 46px; height: 46px; background: #fff; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 50; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 12px; color: #000; cursor: pointer; border: 3px solid var(--accent-neon); box-shadow: 0 0 8px var(--accent-neon); }
+        .slice-segment { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; top: 0; left: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 25px; font-size: 11px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px #000; }
+
+        /* CANVAS CONTAINER FOR SUB-PAGES */
+        .canvas-utility-sheet { position: fixed; inset: 0; background: var(--bg-base); z-index: 20000; display: none; padding: 18px; overflow-y: auto; }
+        .menu-row-item { padding: 14px; border-bottom: 1px solid var(--border-glow); font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; background: var(--bg-surface); border-radius: 8px; margin-bottom: 6px; }
+        .gateway-pill { padding: 12px; background: #151824; border: 1px solid var(--border-glow); border-radius: 8px; margin-bottom: 8px; cursor: pointer; font-size: 12.5px; display: flex; justify-content: space-between; }
+        .gateway-pill.selected { border-color: var(--accent-neon); color: var(--accent-neon); }
+
+        /* BOTTOM APP FOOTER NAVIGATION DOCK */
+        .bottom-dock-nav { position: fixed; bottom: 200px; left: 0; right: 0; height: 62px; background: #0f111a; border-top: 1px solid var(--border-glow); display: flex; justify-content: space-around; align-items: center; z-index: 10000; }
+        .dock-element { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: var(--text-muted); font-weight: 600; cursor: pointer; flex: 1; height: 100%; gap: 3px; }
+        .dock-element.active { color: var(--primary); }
+        .dock-element span { font-size: 18px; }
+
+        #toast-frame { position: fixed; bottom: 280px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 12px; font-weight: bold; z-index: 30000; display: none; box-shadow: 0 0 10px var(--primary); }
+
+        /* CUSTOM VISIBLE DEBUG TERMINAL PANEL FOR TABLET */
+        #tablet-debug-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: #05070f;
+            border-top: 2px solid #1565ff;
+            z-index: 100000;
+            font-family: monospace;
+            font-size: 11px;
+            color: #a6b2c9;
+            display: flex;
+            flex-direction: column;
+        }
+        .debug-header {
+            background: #0d1122;
+            padding: 6px 12px;
+            border-bottom: 1px solid #1e2538;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #00ffcc;
+        }
+        .debug-console-logs {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            background: #020408;
+        }
+        .debug-line {
+            margin-bottom: 4px;
+            border-bottom: 1px solid #0b0f19;
+            padding-bottom: 2px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .debug-log-type { color: #00ff66; margin-right: 5px; }
+        .debug-err-type { color: #ff3366; margin-right: 5px; font-weight: bold; }
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+    <div id="tablet-debug-panel">
+        <div class="debug-header">
+            <span>📟 TABLET LIVE RUNTIME DEBUGGER</span>
+            <button onclick="clearTabletConsoleLogs()" style="background:#ff3366; color:white; border:none; padding:2px 8px; border-radius:4px; font-size:10px; cursor:pointer; font-weight:bold;">CLEAR CONSOLE</button>
+        </div>
+        <div class="debug-console-logs" id="debugConsoleStreamAnchor"></div>
+    </div>
+
+    <div id="authWrapperPortal">
+        <div class="auth-container">
+            <div class="header-brand">
+                <div class="brand-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#06070a" stroke-width="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                </div>
+                <div class="brand-name">OMNICORE CAPITAL</div>
+                <div class="brand-sub">Institutional Infrastructure</div>
+            </div>
+
+            <div id="loginSection" class="form-panel active">
+                <div class="panel-title">System Identification</div>
+                <div class="input-group">
+                    <label class="input-label">Terminal Identity (Phone)</label>
+                    <div class="box-wrapper">
+                        <span class="prefix-node">+91</span>
+                        <input type="text" id="loginPhone" class="input-field" placeholder="Enter phone sequence" maxlength="10">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Security Pass-Phrase</label>
+                    <div class="box-wrapper">
+                        <input type="password" id="loginPassword" class="input-field" placeholder="Cryptographic string">
+                    </div>
+                </div>
+                <div class="options-flex">
+                    <label style="color:var(--text-muted);"><input type="checkbox" checked style="accent-color:var(--accent-neon);"> Keep Active</label>
+                    <a href="#" class="link-node" onclick="routeForm('forgotSection')">Recovery Path?</a>
+                </div>
+                <button class="btn-core" onclick="validateAndLogin()">Initialize Gateway</button>
+                <button class="btn-outline" onclick="routeForm('registerSection')">Deploy New Node (Register)</button>
+            </div>
+
+            <div id="registerSection" class="form-panel">
+                <div class="panel-title">Node Deployment</div>
+                <div class="input-group">
+                    <label class="input-label">Mobile Communication Array</label>
+                    <div class="box-wrapper">
+                        <span class="prefix-node">+91</span>
+                        <input type="text" id="regPhone" class="input-field" placeholder="10 Digit Number" maxlength="10">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Establish Access Cipher</label>
+                    <div class="box-wrapper">
+                        <input type="password" id="regPassword" class="input-field" placeholder="Min 6 characters">
+                    </div>
+                </div>
+                <button class="btn-core" style="margin-top:10px;" onclick="validateAndRegister()">Deploy Node Coordinates</button>
+                <button class="btn-outline" onclick="routeForm('loginSection')">Return to Gateway Access</button>
+            </div>
+
+            <div id="forgotSection" class="form-panel">
+                <div class="panel-title">Cipher Recovery Sequence</div>
+                <div class="input-group">
+                    <label class="input-label">Registered Terminal Reference</label>
+                    <div class="box-wrapper">
+                        <span class="prefix-node">+91</span>
+                        <input type="text" id="forgotPhone" class="input-field" placeholder="Registered phone" maxlength="10">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Generate Replacement Cipher</label>
+                    <div class="box-wrapper">
+                        <input type="password" id="forgotNewPassword" class="input-field" placeholder="New password">
+                    </div>
+                </div>
+                <button class="btn-core" style="margin-top:10px;" onclick="validateAndReset()">Override Cipher Field</button>
+                <button class="btn-outline" onclick="routeForm('loginSection')">Abort Matrix Re-route</button>
+            </div>
+
+            <div style="margin-top:20px; text-align:center; font-size:10px; color:var(--text-muted); line-height:1.4;">
+                OmniCore Systems Node Architecture Inc.<br>Corporate Node Headquarters: Alpha Tech Park, DE<br>Contact: ops@omnicore-capital.io
+            </div>
+        </div>
+    </div>
+
+
+    <div id="mainAppDashboardFrame">
+        
+        <div class="modal-overlay" id="startupAnnouncementBox">
+            <div class="modal-box">
+                <div class="modal-title">OmniCore Operational Core</div>
+                <div class="modal-text">
+                    Welcome to OmniCore Capital. Our automated quantitative trading clusters perform sub-millisecond digital liquidity arbitrage. Access your localized control terminals to initialize algorithmic nodes and manage your capital routing matrices efficiently.
+                </div>
+                <button class="modal-btn" onclick="dismissModal()">Acknowledge Shell</button>
+            </div>
+        </div>
+
+        <div class="top-header">
+            <div>
+                <div class="uid-string" id="terminalAddressUid">NODE ID: +91 ----------</div>
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 1px;">REAL-TIME CORE DIRECTORY ACTIVE</div>
+            </div>
+            <button class="system-help-trigger" onclick="triggerUtility('help')">Support Desk</button>
+        </div>
+
+        <div class="metrics-card">
+            <div class="m-lbl">Unified Liquidity Vault (Wallet)</div>
+            <div class="m-val" id="valMainWallet">₹0.00</div>
+            <div class="metrics-sub-grid">
+                <div>
+                    <div class="m-lbl">Promotional Income</div>
+                    <div class="sub-val" id="valPromoWallet">₹0.00</div>
+                </div>
+                <div>
+                    <div class="m-lbl">Investment Income</div>
+                    <div class="sub-val" id="valInvestWallet">₹0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-home" class="app-section active">
+            <div class="sec-header-title">Enterprise Dashboard</div>
+            <div class="block-card" style="background: linear-gradient(135deg, #101726, #090b11); border-left: 4px solid var(--primary);">
+                <h4 style="color:#fff; font-size:13.5px; margin-bottom:4px;">🌐 Micro-Pooling Asset Networks</h4>
+                <p style="font-size:11px; color: var(--text-muted); line-height:1.5;">OmniCore nodes process computational transactions to build highly scalable liquidity structures with guaranteed yield metrics.</p>
+            </div>
+            
+            <div class="block-card">
+                <h4 style="font-size:13px; margin-bottom:10px; color:#fff;">🎟️ Claim Promo Gift Coupon</h4>
+                <input type="text" id=
